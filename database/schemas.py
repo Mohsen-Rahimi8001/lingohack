@@ -17,7 +17,7 @@ class Phrase(PhraseBase):
     table_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TableBase(BaseModel):
@@ -35,7 +35,7 @@ class Table(TableBase):
     writer_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserBase(BaseModel):
@@ -49,6 +49,16 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     tables: list[Table] = []
+    disabled: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

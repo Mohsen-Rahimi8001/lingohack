@@ -18,6 +18,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    disabled = Column(Boolean, default=False)
 
     tables = relationship("Table", back_populates="writer")
 
@@ -32,6 +33,8 @@ class Table(Base):
 
     writer_id = Column(Integer, ForeignKey("users.id"))
 
+    writer = relationship("User", back_populates="tables")
+    
     phrases = relationship("Phrase", back_populates="table")
 
 
@@ -46,4 +49,4 @@ class Phrase(Base):
 
     table_id = Column(Integer, ForeignKey("tables.id"))
 
-    table = relationship("Table", ForeignKey("tables.table"))
+    table = relationship("Table", back_populates="phrases")
