@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from routers.auth import auth_router
 from database import models
 from database.database import engine, SessionLocal
