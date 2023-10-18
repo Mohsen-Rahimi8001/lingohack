@@ -5,7 +5,7 @@ class PhraseBase(BaseModel):
     phrase: str
     meaning: str
     description: str
-    difficulty: str
+    difficulty: float
 
 
 class PhraseCreate(PhraseBase):
@@ -33,6 +33,7 @@ class TableCreate(TableBase):
 class Table(TableBase):
     id: int
     writer_id: int
+    phrases: list[Phrase] = []
 
     class Config:
         from_attributes = True

@@ -27,8 +27,8 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def get_table(db: Session, table_id: int):
-    return db.query(models.Table).filter(models.Table.id == table_id).first()
+def get_table(db: Session, table_id: int, user_id: int):
+    return db.query(models.Table).filter(models.Table.id == table_id, models.Table.writer_id == user_id).first()
 
 
 def create_table(db: Session, table: schemas.TableCreate, user: schemas.User):
@@ -44,3 +44,24 @@ def create_table(db: Session, table: schemas.TableCreate, user: schemas.User):
     db.refresh(db_table)
 
     return db_table
+
+
+def delete_table(db: Session, table: schemas.Table):
+    db.delete(table)
+    db.commit()
+
+
+def create_phrase(db: Session, phrase: schemas.PhraseCreate, table: schemas.Table):
+    db_phrase = models.Phrase(
+        table_id=table.id,
+        phrase=phrase.phrase,
+        meaning=phrase.meaning,
+        description=phrase.description,
+        difficulty=phrase.difficulty
+    )
+
+    db.add(db_phrase)
+    db.commit()
+    db.refresh(db_phrase)
+
+    return db_phrase

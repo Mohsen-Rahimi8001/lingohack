@@ -20,7 +20,8 @@ class User(Base):
     hashed_password = Column(String)
     disabled = Column(Boolean, default=False)
 
-    tables = relationship("Table", back_populates="writer")
+    tables = relationship("Table", back_populates="writer",
+                          cascade="all, delete-orphan, delete")
 
 
 class Table(Base):
@@ -31,11 +32,13 @@ class Table(Base):
     description = Column(String, index=True)
     difficulty = Column(Float, default=0)
 
-    writer_id = Column(Integer, ForeignKey("users.id"))
+    writer_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
 
     writer = relationship("User", back_populates="tables")
-    
-    phrases = relationship("Phrase", back_populates="table")
+
+    phrases = relationship("Phrase", back_populates="table",
+                           cascade="all, delete-orphan, delete")
 
 
 class Phrase(Base):
@@ -47,6 +50,7 @@ class Phrase(Base):
     description = Column(String, index=True)
     difficulty = Column(Float, default=0)
 
-    table_id = Column(Integer, ForeignKey("tables.id"))
+    table_id = Column(Integer, ForeignKey(
+        "tables.id", ondelete="CASCADE"), nullable=False)
 
     table = relationship("Table", back_populates="phrases")

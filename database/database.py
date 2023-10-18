@@ -1,7 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import logging
 
+logging.basicConfig(filename="sqlalchemy.log")
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 SQLASQLALCHEMY_DATABASE_URL = "sqlite:///./database.db"
 
