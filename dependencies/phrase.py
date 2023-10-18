@@ -6,7 +6,7 @@ from database.database import SessionLocal
 from database.crud import get_table, create_table, delete_table, create_phrase
 from database.schemas import TableCreate, Table, User, PhraseCreate
 
-from .auth.login import get_current_active_user
+from .user import get_current_active_user
 
 
 def get_db():

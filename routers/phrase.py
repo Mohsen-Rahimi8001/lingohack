@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from dependencies.auth.login import get_current_active_user
+from dependencies.user import get_current_active_user
 from database.schemas import User, Table, TableCreate, PhraseCreate
 from dependencies.phrase import get_table_dep, create_table_dep, delete_table_dep, create_phrase_dep
 

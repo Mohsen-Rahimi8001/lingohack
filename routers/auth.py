@@ -4,14 +4,19 @@ from fastapi import APIRouter, Body, HTTPException, status, Depends
 
 from fastapi.security import OAuth2PasswordRequestForm
 
-from dependencies.auth.login import authenticate_user, create_access_token
-from dependencies.auth.register import register_user as register_user_dep
+from dependencies.user import (
+    authenticate_user,
+    create_access_token,
+    get_current_active_user,
+    register_user as register_user_dep
+)
 
-from database.schemas import Token
+from database.schemas import Token, User
 
-auth_router = APIRouter(tags=["Authentication"])
+auth_router = APIRouter(tags=["User"])
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 
 @auth_router.post("/token", response_model=Token)
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -40,7 +45,18 @@ async def register_user(username: str = Body(...), password: str = Body(...), co
         )
 
     created_user = await register_user_dep(username, password)
-    
+
     return {
         "message": f"user {created_user.username} is successfully created"
     }
+
+
+@auth_router.get("/me")
+async def get_me(user: User = Depends(get_current_active_user)):
+    response = {
+        "id": user.id,
+        "username": user.username,
+        "tables": [table.title for table in user.tables],
+        "disabled": user.disabled
+    }
+    return response
