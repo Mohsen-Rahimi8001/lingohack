@@ -11,9 +11,9 @@ from sqlalchemy.orm import Session
 
 from database.database import SessionLocal
 from database import pwd_context
-from database.schemas import User, TokenData
+from database.schemas import User, UserCreate, TokenData
 
-from database.crud import get_user_by_username
+from database.crud import get_user_by_username, create_user
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

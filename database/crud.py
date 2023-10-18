@@ -6,11 +6,13 @@ from database import pwd_context
 
 
 def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    return db.query(models.User).\
+        filter(models.User.id == user_id).first()
 
 
 def get_user_by_username(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
+    return db.query(models.User).\
+        filter(models.User.username == username).first()
 
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -65,3 +67,62 @@ def create_phrase(db: Session, phrase: schemas.PhraseCreate, table: schemas.Tabl
     db.refresh(db_phrase)
 
     return db_phrase
+
+
+def get_quiz(db: Session, quiz_id: int, user_id: int):
+    return db.query(models.Quiz).\
+        filter(models.Quiz.id == quiz_id, models.Quiz.writer_id == user_id)\
+        .first()
+
+
+def read_questions(db: Session, user_id: int, limit: int = 100, skip: int = 0):
+    return db.query(models.Question).\
+        filter(models.Question.quiz.participant_id == user_id).\
+        offset(skip).limit(limit).all()
+
+
+def read_tables(db: Session, user_id: int, limit: int = 100, skip: int = 0):
+    return db.query(models.Table).\
+        filter(models.Table.writer_id == user_id).\
+        offset(skip).limit(limit).all()
+
+
+def create_choice(db: Session, choice: schemas.ChoiceCreate, question_id: int):
+    db_choice = models.Choice(
+        question_id=question_id,
+        text=choice.text,
+        is_correct=choice.is_correct
+    )
+
+    db.add(db_choice)
+    db.commit()
+    db.refresh(db_choice)
+
+    return db_choice
+
+
+def create_question(db: Session, question: schemas.QuestionCreate, quiz_id: int):
+    db_question = models.Question(
+        quiz_id=quiz_id,
+        question=question.question
+    )
+
+    db.add(db_question)
+    db.commit()
+    db.refresh(db_question)
+
+    return db_question
+
+
+def create_quiz(db: Session, quiz: schemas.QuizCreate, user_id: int):
+    db_quiz = models.Quiz(
+        participant_id=user_id,
+        title=quiz.title,
+        description=quiz.description,
+    )
+
+    db.add(db_quiz)
+    db.commit()
+    db.refresh(db_quiz)
+
+    return db_quiz

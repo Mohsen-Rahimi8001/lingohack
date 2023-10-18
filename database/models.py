@@ -23,6 +23,9 @@ class User(Base):
     tables = relationship("Table", back_populates="writer",
                           cascade="all, delete-orphan, delete")
 
+    quizzes = relationship("Quiz", back_populates="participant",
+                           cascade="all, delete-orphan, delete")
+
 
 class Table(Base):
     __tablename__ = "tables"
@@ -68,13 +71,17 @@ class Quiz(Base):
     questions = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan, delete")
 
+    participant_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
+
+    participant = relationship("User", back_populates="quizzes")
+
 
 class Question(Base):
     __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True, index=True)
     question = Column(String, index=True)
-    answer = Column(Integer)
 
     quiz_id = Column(Integer, ForeignKey(
         "quizzes.id", ondelete="CASCADE"), nullable=False)
@@ -88,8 +95,11 @@ class Question(Base):
 class Choice(Base):
     __tablename__ = "choices"
 
+    id = Column(Integer, primary_key=True, index=True)
     text = Column(String, index=True)
+    is_correct = Column(Boolean, default=False)
+
     question_id = Column(Integer, ForeignKey(
-        "questions.id", ondelete="CASCADE"), nullable=False, primary_key=True)
+        "questions.id", ondelete="CASCADE"), nullable=False)
 
     question = relationship("Question", back_populates="choices")

@@ -63,3 +63,56 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class ChoiceBase(BaseModel):
+    text: str
+    is_correct: bool
+
+
+class ChoiceCreate(ChoiceBase):
+    pass
+
+
+class Choice(ChoiceBase):
+    question_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class QuestionBase(BaseModel):
+    question: str
+
+
+class QuestionCreate(QuestionBase):
+    pass
+
+
+class Question(QuestionBase):
+    id: int
+    quiz_id: int
+    choices: list[Choice] = []
+
+    class Config:
+        from_attributes = True
+
+
+class QuizBase(BaseModel):
+    title: str
+    description: str
+
+
+class QuizCreate(QuizBase):
+    pass
+
+
+class Quiz(QuizBase):
+    id: int
+    participant_id: int
+    questions: list[Question] = []
+    difficulty: float
+    total_score: int
+
+    class Config:
+        from_attributes = True

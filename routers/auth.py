@@ -15,7 +15,7 @@ from database.schemas import Token, User
 
 auth_router = APIRouter(tags=["User"])
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 
 
 
 @auth_router.post("/token", response_model=Token)
