@@ -9,9 +9,9 @@ from dependencies.auth.register import register_user as register_user_dep
 
 from database.schemas import Token
 
-auth_router = APIRouter()
+auth_router = APIRouter(tags=["Authentication"])
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 5
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 
 
 @auth_router.post("/token", response_model=Token)
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):

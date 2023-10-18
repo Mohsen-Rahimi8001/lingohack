@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta, datetime
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from jose import JWTError, jwt
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from database.database import SessionLocal
 from database import pwd_context
-from database.schemas import User
+from database.schemas import User, TokenData
 
 from database.crud import get_user_by_username
 
@@ -75,9 +75,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(get_db(), username=token_data.username)
+
+    db = next(get_db())
+    user = get_user_by_username(db, username=token_data.username)
+    
     if user is None:
         raise credentials_exception
+    
     return user
 
 

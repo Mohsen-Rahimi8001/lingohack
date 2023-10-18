@@ -25,3 +25,22 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
 
     return db_user
+
+
+def get_table(db: Session, table_id: int):
+    return db.query(models.Table).filter(models.Table.id == table_id).first()
+
+
+def create_table(db: Session, table: schemas.TableCreate, user: schemas.User):
+    db_table = models.Table(
+        writer_id=user.id,
+        title=table.title,
+        description=table.description,
+        difficulty=table.difficulty
+    )
+
+    db.add(db_table)
+    db.commit()
+    db.refresh(db_table)
+
+    return db_table
