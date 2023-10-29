@@ -57,6 +57,7 @@ async def get_me(user: User = Depends(get_current_active_user)):
         "id": user.id,
         "username": user.username,
         "tables": [table.title for table in user.tables],
+        "quizzes": [quiz.title for quiz in user.quizzes],
         "disabled": user.disabled
     }
     return response
