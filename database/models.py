@@ -76,6 +76,16 @@ class Quiz(Base):
 
     participant = relationship("User", back_populates="quizzes")
 
+    def dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "difficulty": self.difficulty,
+            "total_score": self.total_score,
+            "participant_id": self.participant_id,
+        }
+
 
 class Question(Base):
     __tablename__ = "questions"
