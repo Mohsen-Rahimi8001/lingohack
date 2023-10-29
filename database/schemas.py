@@ -117,3 +117,8 @@ class Quiz(QuizBase):
 
     class Config:
         from_attributes = True
+
+
+class Answer(BaseModel):
+    question_id: int
+    choice_id: int

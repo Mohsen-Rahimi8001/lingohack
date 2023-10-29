@@ -10,7 +10,8 @@ from database.crud import (
     create_question, 
     create_quiz,
     get_quiz,
-    delete_quiz
+    delete_quiz,
+    get_question,
 )
 
 from database.schemas import (
@@ -21,7 +22,8 @@ from database.schemas import (
     QuestionCreate, 
     ChoiceCreate, 
     QuizCreate,
-    Phrase
+    Phrase,
+    Answer,
 )
 
 from .user import get_current_active_user
@@ -72,6 +74,25 @@ async def delete_quiz_dep(quiz_id: int, user: User = Depends(get_current_active_
 
     return quiz_to_show
 
+
+async def recieve_answers_dep(quiz_id: int, answers: list[Answer], user: User = Depends(get_current_active_user)):
+    db = next(get_db())
+
+    score = 0
+    for ans in answers:
+        question = get_question(db, ans.question_id, quiz_id)
+        if not question:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Question with question_id {ans.question_id} and quiz_id {quiz_id} not found"
+                )
+        choices = question.choices
+        for choice in choices:
+            if choice.id == ans.choice_id:
+                if choice.is_correct:
+                    score += 1
+
+    return score
 
 async def load_quiz(title:str, description:str, user: User = Depends(get_current_active_user)):
     db = next(get_db())

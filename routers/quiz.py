@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from database.schemas import User, Quiz
 from dependencies.user import get_current_active_user
-from dependencies.quiz import load_quiz, get_quiz_dep, delete_quiz_dep
+from dependencies.quiz import load_quiz, get_quiz_dep, delete_quiz_dep, recieve_answers_dep
 
 quiz_router = APIRouter(
     prefix="/quiz",
@@ -33,3 +33,10 @@ async def get_all_quizzes(user: User = Depends(get_current_active_user)):
 @quiz_router.delete("/{quiz_id}")
 async def delete_quiz(quiz: Quiz = Depends(delete_quiz_dep)):
     return quiz
+
+
+@quiz_router.post("/submit_answer")
+async def submit_answer(score: float = Depends(recieve_answers_dep)):
+    return {
+        "score": score
+    }
