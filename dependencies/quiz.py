@@ -3,7 +3,16 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.database import SessionLocal
-from database.crud import read_tables, create_choice, create_question, create_quiz
+
+from database.crud import (
+    read_tables, 
+    create_choice, 
+    create_question, 
+    create_quiz,
+    get_quiz,
+    delete_quiz
+)
+
 from database.schemas import (
     User, 
     Question,
@@ -26,6 +35,42 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+async def get_quiz_dep(quiz_id: int, user: User = Depends(get_current_active_user)):
+
+    not_found_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"quiz with quiz id {quiz_id} not found"
+    )
+
+    db = next(get_db())
+    quiz = get_quiz(db, quiz_id, user.id)
+
+    if not quiz:
+        raise not_found_exception
+    
+    return quiz
+
+
+async def delete_quiz_dep(quiz_id: int, user: User = Depends(get_current_active_user)):
+    
+    not_found_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"quiz with quiz id {quiz_id} not found"
+    )
+
+    db = next(get_db())
+    quiz = get_quiz(db, quiz_id, user.id)
+
+    if not quiz:
+        raise not_found_exception
+    
+    quiz_to_show = quiz.dict()
+
+    delete_quiz(db, quiz)
+
+    return quiz_to_show
 
 
 async def load_quiz(title:str, description:str, user: User = Depends(get_current_active_user)):
@@ -56,9 +101,6 @@ async def load_quiz(title:str, description:str, user: User = Depends(get_current
     result_quiz = create_quiz(db, result_quiz, user.id)
 
     questions : list[Question] = []
-
-    print(phrases)
-    print(len(phrases))
 
     if len(phrases) < 5:
         raise HTTPException(
