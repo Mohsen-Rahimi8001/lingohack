@@ -71,8 +71,33 @@ def create_phrase(db: Session, phrase: schemas.PhraseCreate, table: schemas.Tabl
 
 def get_quiz(db: Session, quiz_id: int, user_id: int):
     return db.query(models.Quiz).\
-        filter(models.Quiz.id == quiz_id, models.Quiz.writer_id == user_id)\
+        filter(models.Quiz.id == quiz_id, models.Quiz.participant_id == user_id)\
         .first()
+
+
+def get_quizzes(db: Session, user_id: int, limit: int = 100, skip: int = 0):
+    return db.query(models.Quiz).\
+        filter(models.Quiz.participant_id == user_id).\
+        offset(skip).limit(limit).all()
+
+
+def create_quiz(db: Session, quiz: schemas.QuizCreate, user_id: int):
+    db_quiz = models.Quiz(
+        participant_id=user_id,
+        title=quiz.title,
+        description=quiz.description,
+    )
+
+    db.add(db_quiz)
+    db.commit()
+    db.refresh(db_quiz)
+
+    return db_quiz
+
+
+def delete_quiz(db: Session, quiz: schemas.Quiz):
+    db.delete(quiz)
+    db.commit()
 
 
 def read_questions(db: Session, user_id: int, limit: int = 100, skip: int = 0):
@@ -112,17 +137,3 @@ def create_question(db: Session, question: schemas.QuestionCreate, quiz_id: int)
     db.refresh(db_question)
 
     return db_question
-
-
-def create_quiz(db: Session, quiz: schemas.QuizCreate, user_id: int):
-    db_quiz = models.Quiz(
-        participant_id=user_id,
-        title=quiz.title,
-        description=quiz.description,
-    )
-
-    db.add(db_quiz)
-    db.commit()
-    db.refresh(db_quiz)
-
-    return db_quiz
