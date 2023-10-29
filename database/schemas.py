@@ -50,6 +50,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     tables: list[Table] = []
+    quizzes: list['Quiz'] = []
     disabled: bool = False
 
     class Config:
