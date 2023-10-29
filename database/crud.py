@@ -137,3 +137,9 @@ def create_question(db: Session, question: schemas.QuestionCreate, quiz_id: int)
     db.refresh(db_question)
 
     return db_question
+
+
+def get_question(db: Session, question_id: int, quiz_id: int):
+    return db.query(models.Question).\
+        filter(models.Question.id == question_id, models.Question.quiz_id == quiz_id)\
+        .first()
