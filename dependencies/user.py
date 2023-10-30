@@ -50,15 +50,38 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+def create_access_refresh_token(data: dict, access_exp: timedelta | None = None, refresh_exp: timedelta | None = None):
+    access_token_data = data.copy()
+    refresh_token_data = data.copy()
+
+    if access_exp:
+        access_expire = datetime.utcnow() + access_exp
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+        eaccess_expir = datetime.utcnow() + timedelta(minutes=15)
+
+    if refresh_exp:
+        refresh_expire = datetime.utcnow() + refresh_exp
+    else:
+        refresh_expire = datetime.utcnow() + timedelta(days=90)
+
+    access_token_data.update({"exp": access_expire})
+    access_token_data.update({"iat": datetime.utcnow()})
+    access_token_data = jwt.encode(
+        access_token_data, SECRET_KEY, algorithm=ALGORITHM)
+
+    refresh_token_data.update({"exp": refresh_expire})
+    refresh_token_data.update({"iat": datetime.now()})
+    refresh_token_data = jwt.encode(refresh_token_data, SECRET_KEY, ALGORITHM)
+
+    return access_token_data, refresh_token_data
+
+
+def renew_access_token(refresh_token: str):
+    data = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM)
+    data["exp"] = datetime.utcnow() + timedelta(minutes=15)
+
+    new_access_token = jwt.encode(data, SECRET_KEY, ALGORITHM)
+    return new_access_token
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):

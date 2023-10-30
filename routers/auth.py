@@ -6,7 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from dependencies.user import (
     authenticate_user,
-    create_access_token,
+    create_access_refresh_token,
+    renew_access_token,
     get_current_active_user,
     register_user as register_user_dep
 )
@@ -15,10 +16,10 @@ from database.schemas import Token, User
 
 auth_router = APIRouter(tags=["User"])
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-@auth_router.post("/token", response_model=Token)
+@auth_router.post("/token")
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(
         form_data.username, form_data.password
@@ -30,10 +31,23 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+    access_token, refresh_token = create_access_refresh_token(
+        data={"sub": user.username}, access_exp=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+
+
+@auth_router.post("/refresh")
+async def refresh_access_token(new_access_token: str = Depends(renew_access_token)):
+    return {
+        "access": new_access_token,
+        "token_type": "bearer"
+    }
 
 
 @auth_router.post("/register")
