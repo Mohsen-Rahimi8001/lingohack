@@ -127,7 +127,7 @@ def renew_access_token(refresh_token: TokenRecieve = Body(...)):
     try:
         data = jwt.decode(refresh_token.refresh, SECRET_KEY, ALGORITHM)
 
-    except exceptions.ExpiredSignatureError:
+    except (exceptions.JWTError | exceptions.ExpiredSignatureError):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid refresh token"
