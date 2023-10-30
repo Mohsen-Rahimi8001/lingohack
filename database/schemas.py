@@ -58,8 +58,12 @@ class User(UserBase):
 
 
 class Token(BaseModel):
-    access_token: str
+    token: str
     token_type: str
+
+
+class TokenRecieve(BaseModel):
+    refresh: str
 
 
 class TokenData(BaseModel):

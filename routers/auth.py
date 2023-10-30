@@ -32,7 +32,7 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token, refresh_token = create_access_refresh_token(
-        data={"sub": user.username}, access_exp=access_token_expires
+        data={"sub": user.username}
     )
     
     return {
@@ -43,11 +43,8 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @auth_router.post("/refresh")
-async def refresh_access_token(new_access_token: str = Depends(renew_access_token)):
-    return {
-        "access": new_access_token,
-        "token_type": "bearer"
-    }
+async def refresh_access_token(new_access_token: Token = Depends(renew_access_token)):
+    return new_access_token
 
 
 @auth_router.post("/register")

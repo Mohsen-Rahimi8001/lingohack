@@ -2,16 +2,16 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta, datetime
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from jose import JWTError, jwt
+from jose import JWTError, jwt, exceptions
 
 from sqlalchemy.orm import Session
 
 from database.database import SessionLocal
 from database import pwd_context
-from database.schemas import User, UserCreate, TokenData
+from database.schemas import User, UserCreate, TokenData, TokenRecieve, Token
 
 from database.crud import get_user_by_username, create_user
 
@@ -22,6 +22,14 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+
+
+def access_token_expiration_time():
+    return datetime.utcnow() + timedelta(minutes=30)
+
+
+def refresh_token_expiration_time():
+    return datetime.utcnow() + timedelta(days=7)
 
 
 def get_db():
@@ -50,19 +58,12 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def create_access_refresh_token(data: dict, access_exp: timedelta | None = None, refresh_exp: timedelta | None = None):
+def create_access_refresh_token(data: dict):
     access_token_data = data.copy()
     refresh_token_data = data.copy()
 
-    if access_exp:
-        access_expire = datetime.utcnow() + access_exp
-    else:
-        eaccess_expir = datetime.utcnow() + timedelta(minutes=15)
-
-    if refresh_exp:
-        refresh_expire = datetime.utcnow() + refresh_exp
-    else:
-        refresh_expire = datetime.utcnow() + timedelta(days=90)
+    access_expire = access_token_expiration_time()
+    refresh_expire = refresh_token_expiration_time()
 
     access_token_data.update({"exp": access_expire})
     access_token_data.update({"iat": datetime.utcnow()})
@@ -70,18 +71,10 @@ def create_access_refresh_token(data: dict, access_exp: timedelta | None = None,
         access_token_data, SECRET_KEY, algorithm=ALGORITHM)
 
     refresh_token_data.update({"exp": refresh_expire})
-    refresh_token_data.update({"iat": datetime.now()})
+    refresh_token_data.update({"iat": datetime.utcnow()})
     refresh_token_data = jwt.encode(refresh_token_data, SECRET_KEY, ALGORITHM)
 
     return access_token_data, refresh_token_data
-
-
-def renew_access_token(refresh_token: str):
-    data = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM)
-    data["exp"] = datetime.utcnow() + timedelta(minutes=15)
-
-    new_access_token = jwt.encode(data, SECRET_KEY, ALGORITHM)
-    return new_access_token
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -128,3 +121,23 @@ async def register_user(username: str, password: str):
     )
     created_user = create_user(db, to_create_user)
     return created_user
+
+
+def renew_access_token(refresh_token: TokenRecieve = Body(...)):
+    try:
+        data = jwt.decode(refresh_token.refresh, SECRET_KEY, ALGORITHM)
+
+    except exceptions.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid refresh token"
+        )
+
+    data["exp"] = refresh_token_expiration_time()
+
+    new_access_token = jwt.encode(data, SECRET_KEY, ALGORITHM)
+    
+    return Token(
+        token=new_access_token,
+        token_type="bearer"
+    )
