@@ -33,7 +33,6 @@ class Table(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     description = Column(String, index=True)
-    difficulty = Column(Float, default=0)
 
     writer_id = Column(Integer, ForeignKey(
         "users.id", ondelete="CASCADE"), nullable=False)
@@ -43,6 +42,17 @@ class Table(Base):
     phrases = relationship("Phrase", back_populates="table",
                            cascade="all, delete-orphan, delete")
 
+    @property
+    def difficulty(self):
+        if len(self.phrases) == 0:
+            return 0
+
+        res = 0
+        for phrase in self.phrases:
+            res += phrase.difficulty
+
+        return res / len(self.phrases)
+
 
 class Phrase(Base):
     __tablename__ = "phrases"
@@ -51,12 +61,24 @@ class Phrase(Base):
     phrase = Column(String, index=True)
     meaning = Column(String, index=True)
     description = Column(String, index=True)
-    difficulty = Column(Float, default=0)
+
+    ask_count = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)
 
     table_id = Column(Integer, ForeignKey(
         "tables.id", ondelete="CASCADE"), nullable=False)
 
     table = relationship("Table", back_populates="phrases")
+
+    questions = relationship(
+        "Question", back_populates="phrase", cascade="all, delete-orphan, delete")
+
+    @property
+    def difficulty(self):
+        if self.ask_count == 0:
+            return 0
+
+        return self.correct_answers / self.ask_count
 
 
 class Quiz(Base):
@@ -65,7 +87,6 @@ class Quiz(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     description = Column(String, index=True)
-    difficulty = Column(Float, default=0)
     total_score = Column(Integer, default=0)
 
     questions = relationship(
@@ -75,6 +96,17 @@ class Quiz(Base):
         "users.id", ondelete="CASCADE"), nullable=False)
 
     participant = relationship("User", back_populates="quizzes")
+
+    @property
+    def difficulty(self):
+        if len(self.questions) == 0:
+            return 0
+
+        res = 0
+        for question in self.questions:
+            res += question.difficulty
+
+        return res / len(self.questions)
 
     def dict(self):
         return {
@@ -93,6 +125,14 @@ class Question(Base):
     id = Column(Integer, primary_key=True, index=True)
     question = Column(String, index=True)
 
+    ask_count = Column(Integer, default=0)
+    correct_answers = Column(Integer, default=0)
+
+    phrase_id = Column(Integer, ForeignKey(
+        "phrases.id", ondelete="CASCADE"), nullable=False)
+
+    phrase = relationship("Phrase", back_populates="questions")
+
     quiz_id = Column(Integer, ForeignKey(
         "quizzes.id", ondelete="CASCADE"), nullable=False)
 
@@ -100,6 +140,13 @@ class Question(Base):
 
     choices = relationship("Choice", back_populates="question",
                            cascade="all, delete-orphan, delete")
+
+    @property
+    def difficulty(self):
+        if self.ask_count == 0:
+            return 0
+            
+        return self.correct_answers / self.ask_count
 
 
 class Choice(Base):

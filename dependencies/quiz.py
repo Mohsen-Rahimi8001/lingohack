@@ -12,6 +12,7 @@ from database.crud import (
     get_quiz,
     delete_quiz,
     get_question,
+    update_question,
 )
 
 from database.schemas import (
@@ -19,7 +20,8 @@ from database.schemas import (
     Question,
     Choice,
     Quiz,
-    QuestionCreate, 
+    QuestionCreate,
+    QuestionUpdate,
     ChoiceCreate, 
     QuizCreate,
     Phrase,
@@ -80,17 +82,34 @@ async def recieve_answers_dep(quiz_id: int, answers: list[Answer], user: User = 
 
     score = 0
     for ans in answers:
-        question = get_question(db, ans.question_id, quiz_id)
+        question: Question = get_question(db, ans.question_id, quiz_id)
         if not question:
             raise HTTPException(
                 status_code=404, 
                 detail=f"Question with question_id {ans.question_id} and quiz_id {quiz_id} not found"
                 )
+        
         choices = question.choices
+
         for choice in choices:
             if choice.id == ans.choice_id:
+                
                 if choice.is_correct:
                     score += 1
+                    new_question = QuestionUpdate(
+                        ask_count = question.ask_count + 1,
+                        correct_answers = question.correct_answers + 1,
+                        question=question.question
+                    )
+
+                new_question = QuestionUpdate(
+                    ask_count = question.ask_count + 1,
+                    correct_answers = question.correct_answers,
+                    question=question.question
+                )
+                
+                db = next(get_db()) 
+                updated_question = update_question(db, question.id, new_question)
 
     return score
 
@@ -131,7 +150,8 @@ async def load_quiz(title:str, description:str, user: User = Depends(get_current
 
     for i, phrase in enumerate(phrases[:5]):
         q = QuestionCreate(
-            question=f"What is the meaning of {phrase.phrase}?"
+            question=f"What is the meaning of {phrase.phrase}?",
+            phrase_id=phrase.id,
         )
 
         q_in_db = create_question(db, q, result_quiz.id)
@@ -172,5 +192,8 @@ async def load_quiz(title:str, description:str, user: User = Depends(get_current
         questions.append(q_in_db)
     
     result_quiz.questions = questions.copy()
+    
+    for question in result_quiz.questions:
+        question.choices = question.choices
 
     return result_quiz

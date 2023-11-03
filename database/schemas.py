@@ -5,7 +5,6 @@ class PhraseBase(BaseModel):
     phrase: str
     meaning: str
     description: str
-    difficulty: float
 
 
 class PhraseCreate(PhraseBase):
@@ -15,15 +14,21 @@ class PhraseCreate(PhraseBase):
 class Phrase(PhraseBase):
     id: int
     table_id: int
+    difficulty: float
+    questions: list['Question'] = []
 
     class Config:
         from_attributes = True
 
 
+class PhraseUpdate(PhraseBase):
+    ask_count: int = 0
+    correct_answers: int = 0
+
+
 class TableBase(BaseModel):
     title: str
     description: str
-    difficulty: float
 
 
 class TableCreate(TableBase):
@@ -34,6 +39,7 @@ class Table(TableBase):
     id: int
     writer_id: int
     phrases: list[Phrase] = []
+    difficulty: float
 
     class Config:
         from_attributes = True
@@ -91,16 +97,22 @@ class QuestionBase(BaseModel):
 
 
 class QuestionCreate(QuestionBase):
-    pass
+    phrase_id: int
 
 
 class Question(QuestionBase):
     id: int
     quiz_id: int
     choices: list[Choice] = []
+    phrase_id: int
 
     class Config:
         from_attributes = True
+
+
+class QuestionUpdate(QuestionBase):
+    ask_count: int = 0
+    correct_answers: int = 0
 
 
 class QuizBase(BaseModel):

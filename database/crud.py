@@ -38,7 +38,6 @@ def create_table(db: Session, table: schemas.TableCreate, user: schemas.User):
         writer_id=user.id,
         title=table.title,
         description=table.description,
-        difficulty=table.difficulty
     )
 
     db.add(db_table)
@@ -59,8 +58,25 @@ def create_phrase(db: Session, phrase: schemas.PhraseCreate, table: schemas.Tabl
         phrase=phrase.phrase,
         meaning=phrase.meaning,
         description=phrase.description,
-        difficulty=phrase.difficulty
     )
+
+    db.add(db_phrase)
+    db.commit()
+    db.refresh(db_phrase)
+
+    return db_phrase
+
+
+def get_phrase(db: Session, phrase_id: int):
+    return db.query(models.Phrase).filter(models.Phrase.id == phrase_id).first()
+
+
+def update_phrase(db: Session, phrase_id: int, new_phrase: schemas.PhraseUpdate):
+    db_phrase = db.query(models.Phrase).filter(
+        models.Phrase.id == phrase_id).first()
+
+    for key, value in new_phrase.dict().items():
+        db_phrase[key] = value
 
     db.add(db_phrase)
     db.commit()
@@ -126,10 +142,15 @@ def create_choice(db: Session, choice: schemas.ChoiceCreate, question_id: int):
     return db_choice
 
 
+def get_choice(db: Session, choice_id: int):
+    return db.query(models.Choice).filter(models.Choice.id == choice_id).first()
+
+
 def create_question(db: Session, question: schemas.QuestionCreate, quiz_id: int):
     db_question = models.Question(
         quiz_id=quiz_id,
-        question=question.question
+        question=question.question,
+        phrase_id=question.phrase_id,
     )
 
     db.add(db_question)
@@ -143,3 +164,18 @@ def get_question(db: Session, question_id: int, quiz_id: int):
     return db.query(models.Question).\
         filter(models.Question.id == question_id, models.Question.quiz_id == quiz_id)\
         .first()
+
+
+def update_question(db: Session, question_id: int, new_question: schemas.QuestionUpdate):
+    db_question = db.query(models.Question).filter(
+        models.Question.id == question_id).first()
+
+    if not db_question:
+        raise KeyError(f"question_id {question_id} not found!")
+
+    db_question.ask_count = new_question.ask_count
+    db_question.correct_answers = new_question.correct_answers
+
+    db.commit()
+
+    return db_question

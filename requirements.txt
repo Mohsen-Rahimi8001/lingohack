@@ -4,5 +4,5 @@ pydantic[email]
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]
-SQLAlchemy
+SQLAlchemy<1.4.0
 alembic

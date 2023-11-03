@@ -32,12 +32,11 @@ async def get_table_dep(table_id: int, user: User = Depends(get_current_active_u
     return table
 
 
-async def create_table_dep(title: str, description: str, difficulty: float = 0, user: User = Depends(get_current_active_user)):
+async def create_table_dep(title: str, description: str, user: User = Depends(get_current_active_user)):
     db = next(get_db())
     table = TableCreate(
         title=title,
         description=description,
-        difficulty=difficulty,
     )
 
     table = create_table(db, table, user)

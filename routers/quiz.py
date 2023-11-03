@@ -21,6 +21,8 @@ async def get_quiz_by_id(quiz: Quiz = Depends(get_quiz_dep)):
     for question in quiz.questions:
         question.choices = question.choices
 
+    quiz.difficulty
+    
     return quiz
 
 
