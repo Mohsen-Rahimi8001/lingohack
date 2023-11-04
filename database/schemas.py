@@ -15,7 +15,7 @@ class Phrase(PhraseBase):
     id: int
     table_id: int
     difficulty: float
-    questions: list['Question'] = []
+    questions: list = []
 
     class Config:
         from_attributes = True
@@ -56,7 +56,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     tables: list[Table] = []
-    quizzes: list['Quiz'] = []
+    quizzes: list = []
     disabled: bool = False
 
     class Config:
