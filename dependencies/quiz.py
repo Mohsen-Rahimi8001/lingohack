@@ -102,11 +102,12 @@ async def recieve_answers_dep(quiz_id: int, answers: list[Answer], user: User = 
                         question=question.question
                     )
 
-                new_question = QuestionUpdate(
-                    ask_count = question.ask_count + 1,
-                    correct_answers = question.correct_answers,
-                    question=question.question
-                )
+                else:
+                    new_question = QuestionUpdate(
+                        ask_count = question.ask_count + 1,
+                        correct_answers = question.correct_answers,
+                        question=question.question
+                    )
                 
                 db = next(get_db()) 
                 updated_question = update_question(db, question.id, new_question)
