@@ -20,3 +20,5 @@ https://www.iana.org/assignments/jose/jose.xhtml
 #### run the app
 ```uvicorn main:app --reload --port=<port number>```
 
+#### see the overview of the api
+```<domain name>:<port number>/docs```
