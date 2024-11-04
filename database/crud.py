@@ -179,3 +179,8 @@ def update_question(db: Session, question_id: int, new_question: schemas.Questio
     db.commit()
 
     return db_question
+
+
+def delete_phrase(db: Session, phrase: schemas.Phrase):
+    db.delete(phrase)
+    db.commit()

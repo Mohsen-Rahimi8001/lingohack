@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.database import SessionLocal
-from database.crud import get_table, create_table, delete_table, create_phrase
+from database.crud import get_table, create_table, delete_table, create_phrase, get_phrase, delete_phrase
 from database.schemas import TableCreate, Table, User, PhraseCreate
 
 from .user import get_current_active_user
@@ -72,3 +72,19 @@ async def create_phrase_dep(table_id: int, phrase: PhraseCreate, user: User = De
     phrase = create_phrase(db, phrase, table)
 
     return phrase
+
+
+async def delete_phrase_dep(phrase_id: int, user: User):
+    db = next(get_db())
+    phrase = get_phrase(db, phrase_id)
+
+    not_found_exception = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"phrase with phrase id {phrase_id} not found"
+    )
+    
+    if not phrase:
+        print('here')
+        raise not_found_exception
+    
+    delete_phrase(db, phrase)
