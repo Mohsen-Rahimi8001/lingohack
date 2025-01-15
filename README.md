@@ -1,5 +1,5 @@
 # LingoHack
-The program is gonna help me store new stuff that I learn in English.
+This program is going to help me store new stuff that I learn in English. 
 
 ## you should create a .env file and put these information in it
 ```
